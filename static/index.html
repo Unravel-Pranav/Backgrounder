@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Backgrounder</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <!-- Ambient background blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <div class="container">
+    <!-- Hero -->
+    <header class="hero">
+      <div class="logo">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <rect width="40" height="40" rx="10" fill="url(#logo-grad)"/>
+          <path d="M12 28V16l8-6 8 6v12l-8 4-8-4z" stroke="#fff" stroke-width="2" fill="none" stroke-linejoin="round"/>
+          <circle cx="20" cy="18" r="3" fill="#fff"/>
+          <defs>
+            <linearGradient id="logo-grad" x1="0" y1="0" x2="40" y2="40">
+              <stop stop-color="#6366f1"/>
+              <stop offset="1" stop-color="#8b5cf6"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <h1>Backgrounder</h1>
+      </div>
+      <p class="tagline">AI-powered professional background intelligence</p>
+    </header>
+
+    <!-- Search Form -->
+    <section class="search-section">
+      <form id="searchForm" autocomplete="off">
+        <div class="form-row main-input">
+          <div class="input-group full">
+            <label for="name">Full Name *</label>
+            <input type="text" id="name" name="name" placeholder="e.g. Satya Nadella" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="input-group">
+            <label for="company">Company</label>
+            <input type="text" id="company" name="company" placeholder="e.g. Microsoft" />
+          </div>
+          <div class="input-group">
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title" placeholder="e.g. CEO" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="input-group">
+            <label for="location">Location</label>
+            <input type="text" id="location" name="location" placeholder="e.g. San Francisco, CA" />
+          </div>
+          <div class="input-group">
+            <label for="linkedin_url">LinkedIn URL</label>
+            <input type="url" id="linkedin_url" name="linkedin_url" placeholder="https://linkedin.com/in/..." />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="input-group">
+            <label for="photo">Photo (for reverse search)</label>
+            <div class="file-upload-wrapper">
+              <input type="file" id="photo" name="photo" accept="image/*" />
+              <div class="file-upload-display" id="photoDisplay">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span class="file-upload-text">Upload photo or paste URL below</span>
+              </div>
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="photo_url">Or Photo URL</label>
+            <input type="url" id="photo_url" name="photo_url" placeholder="https://example.com/photo.jpg" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="input-group">
+            <label for="resume">Resume (PDF / DOCX)</label>
+            <div class="file-upload-wrapper">
+              <input type="file" id="resume" name="resume" accept=".pdf,.docx,.doc" />
+              <div class="file-upload-display" id="fileDisplay">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span class="file-upload-text">Choose file or drag here</span>
+              </div>
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="provider">LinkedIn Provider</label>
+            <select id="provider" name="provider">
+              <option value="">Default (from server config)</option>
+              <option value="serpapi">SerpAPI</option>
+              <option value="playwright">Playwright (Scraping)</option>
+              <option value="proxycurl">Proxycurl</option>
+              <option value="rapidapi">RapidAPI</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="input-group btn-group" style="flex:1">
+            <button type="submit" id="submitBtn">
+              <span class="btn-text">Run Background Check</span>
+              <span class="btn-loader" hidden>
+                <span class="spinner"></span>
+                Searching...
+              </span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- Error -->
+    <div id="errorBox" class="error-box" hidden></div>
+
+    <!-- Live Activity Feed -->
+    <section id="loadingSkeleton" class="report-section" hidden>
+      <div class="card activity-card">
+        <div class="card-label">Live Investigation</div>
+        <div class="progress-bar-wrapper">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <span class="progress-text" id="progressText">Starting...</span>
+        </div>
+        <div class="activity-feed" id="activityFeed"></div>
+      </div>
+    </section>
+
+    <!-- Report -->
+    <section id="report" class="report-section" hidden>
+
+      <!-- Person Header -->
+      <div id="personHeader" class="card card-header fade-in">
+        <div class="person-info">
+          <div class="person-avatar" id="personAvatar"></div>
+          <div>
+            <h2 id="personName"></h2>
+            <p id="personHeadline" class="headline"></p>
+            <div class="person-meta">
+              <span id="personLocation" class="meta-item" hidden>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span></span>
+              </span>
+              <a id="personLinkedin" class="meta-item linkedin-link" href="#" target="_blank" hidden>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                View Profile
+              </a>
+            </div>
+          </div>
+        </div>
+        <div id="confidenceNote" class="confidence-note" hidden></div>
+      </div>
+
+      <!-- Verdict -->
+      <div id="verdictCard" class="card verdict-card fade-in" style="animation-delay:.08s" hidden>
+        <div class="verdict-header">
+          <div class="verdict-score-ring" id="verdictScoreRing">
+            <svg viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="10"/>
+              <circle id="verdictArc" cx="60" cy="60" r="50" fill="none" stroke-width="10" stroke-linecap="round"
+                stroke-dasharray="314" stroke-dashoffset="314" transform="rotate(-90 60 60)"/>
+            </svg>
+            <div class="verdict-score-text">
+              <span id="verdictScoreNum" class="verdict-score-num">0</span>
+              <span class="verdict-score-label">/ 100</span>
+            </div>
+          </div>
+          <div class="verdict-info">
+            <span id="verdictBadge" class="verdict-badge"></span>
+            <p id="verdictSummary" class="verdict-summary"></p>
+          </div>
+        </div>
+
+        <div id="verdictRedFlags" class="verdict-section" hidden>
+          <div class="verdict-section-label red">Red Flags</div>
+          <ul id="verdictRedFlagsList" class="verdict-list red"></ul>
+        </div>
+
+        <div id="verdictGreenFlags" class="verdict-section" hidden>
+          <div class="verdict-section-label green">Green Flags</div>
+          <ul id="verdictGreenFlagsList" class="verdict-list green"></ul>
+        </div>
+
+        <div id="verdictResumeVs" class="verdict-section" hidden>
+          <div class="verdict-section-label">Resume vs Online</div>
+          <ul id="verdictResumeVsList" class="verdict-list resume-vs"></ul>
+        </div>
+
+        <div id="verdictRecs" class="verdict-section" hidden>
+          <div class="verdict-section-label">Recommendations</div>
+          <ul id="verdictRecsList" class="verdict-list recs"></ul>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="card fade-in" style="animation-delay:.1s">
+        <div class="card-label">Executive Summary</div>
+        <p id="summaryText" class="summary-text"></p>
+      </div>
+
+      <!-- Professional Background -->
+      <div id="bgCard" class="card fade-in" style="animation-delay:.2s" hidden>
+        <div class="card-label">Professional Background</div>
+        <div id="bgText" class="bg-text"></div>
+      </div>
+
+      <!-- Resume Data -->
+      <div id="resumeCard" class="card fade-in" style="animation-delay:.15s" hidden>
+        <div class="card-label">Resume Analysis</div>
+        <div id="resumeContent" class="resume-content"></div>
+      </div>
+
+      <!-- Identity Verification -->
+      <div id="identityCard" class="card identity-card fade-in" style="animation-delay:.25s" hidden>
+        <div class="card-label">Identity Verification</div>
+        <div class="identity-header">
+          <span id="identityBadge" class="identity-badge"></span>
+        </div>
+        <div id="identityWarning" class="identity-warning" hidden>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>Multiple people with this name detected across sources</span>
+        </div>
+        <p id="identityReasoning" class="identity-reasoning"></p>
+        <div id="xrefSection" hidden>
+          <div class="card-label" style="font-size:.65rem;margin-bottom:8px">Cross-Reference Notes</div>
+          <ul id="xrefList" class="xref-list"></ul>
+        </div>
+        <div id="profilesFoundSection" hidden>
+          <div class="card-label" style="font-size:.65rem;margin-bottom:8px;margin-top:14px">Profiles Found</div>
+          <div id="profilesFoundList" class="profiles-found"></div>
+        </div>
+      </div>
+
+      <!-- Key Highlights -->
+      <div id="highlightsCard" class="card fade-in" style="animation-delay:.3s" hidden>
+        <div class="card-label">Key Highlights</div>
+        <ul id="highlightsList" class="highlights-list"></ul>
+      </div>
+
+      <!-- LinkedIn Experience -->
+      <div id="experienceCard" class="card fade-in" style="animation-delay:.4s" hidden>
+        <div class="card-label">Experience</div>
+        <div id="experienceTimeline" class="timeline"></div>
+      </div>
+
+      <!-- LinkedIn Education -->
+      <div id="educationCard" class="card fade-in" style="animation-delay:.45s" hidden>
+        <div class="card-label">Education</div>
+        <div id="educationList" class="education-list"></div>
+      </div>
+
+      <!-- Skills -->
+      <div id="skillsCard" class="card fade-in" style="animation-delay:.5s" hidden>
+        <div class="card-label">Skills</div>
+        <div id="skillsTags" class="skills-tags"></div>
+      </div>
+
+      <!-- Photo Matches -->
+      <div id="photoCard" class="card fade-in" style="animation-delay:.47s" hidden>
+        <div class="card-label">Reverse Photo Search</div>
+        <div id="photoList" class="photo-matches-list"></div>
+      </div>
+
+      <!-- Company Verification -->
+      <div id="companyCard" class="card fade-in" style="animation-delay:.48s" hidden>
+        <div class="card-label">Company Verification</div>
+        <div id="companyList" class="company-check-list"></div>
+      </div>
+
+      <!-- Social Media -->
+      <div id="socialCard" class="card fade-in" style="animation-delay:.5s" hidden>
+        <div class="card-label">Social Media Presence</div>
+        <div id="socialList" class="social-list"></div>
+      </div>
+
+      <!-- GitHub Profiles -->
+      <div id="githubCard" class="card fade-in" style="animation-delay:.52s" hidden>
+        <div class="card-label">GitHub Profiles</div>
+        <div id="githubList" class="github-profiles-list"></div>
+      </div>
+
+      <!-- News Mentions -->
+      <div id="newsCard" class="card fade-in" style="animation-delay:.55s" hidden>
+        <div class="card-label">News Mentions</div>
+        <div id="newsList" class="news-list"></div>
+      </div>
+
+      <!-- Reference Contacts -->
+      <div id="referencesCard" class="card fade-in" style="animation-delay:.58s" hidden>
+        <div class="card-label">Verification Contacts</div>
+        <p class="ref-subtitle">People at the same companies who may verify employment</p>
+        <div id="referencesList" class="references-list"></div>
+      </div>
+
+      <!-- Sources Footer -->
+      <div class="card card-footer fade-in" style="animation-delay:.6s">
+        <div class="sources-row">
+          <div>
+            <span class="footer-label">Sources</span>
+            <span id="sourcesList" class="sources-list"></span>
+          </div>
+          <div>
+            <span class="footer-label">Provider</span>
+            <span id="providerUsed" class="provider-badge"></span>
+          </div>
+          <div>
+            <span class="footer-label">Generated</span>
+            <span id="generatedAt" class="generated-at"></span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "WebSearch",
+      "WebFetch(domain:docs.api.nvidia.com)",
+      "WebFetch(domain:serpapi.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:nubela.co)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:rapidapi.com)",
+      "Bash(pip install:*)",
+      "Bash(python3 -m pip install:*)",
+      "Bash(python3:*)",
+      "Bash(uv:*)",
+      "Bash(curl:*)",
+      "Bash(.venv/bin/python:*)"
+    ]
+  }
+}
